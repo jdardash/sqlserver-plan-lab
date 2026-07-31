@@ -29,11 +29,16 @@ jobs:
           done
           docker inspect --format '{{.State.Health.Status}}' planlab-mssql | grep -q healthy
 
-      - name: Unit tests
-        run: python -m pytest tests/ -q
-
+      # Seed before the tests, not after. The measurement tests exercise the
+      # harness against the real database rather than a mock, so PlanLab has to
+      # exist first. Running them earlier passes on a developer machine where
+      # the database is left over from a previous run, and fails on a clean
+      # one, which is precisely the bug CI is here to catch.
       - name: Seed
         run: python -m lab seed
+
+      - name: Unit tests
+        run: python -m pytest tests/ -q
 
       - name: Reproduce every pathology
         run: python -m lab run

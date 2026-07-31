@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Captured plans under results/ are the point of this repository and ARE
+# committed. Nothing there is ignored.

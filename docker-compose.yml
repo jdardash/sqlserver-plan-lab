@@ -1,0 +1,20 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: planlab-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "PlanLab!Passw0rd"
+      MSSQL_PID: Developer
+    ports:
+      # 11433 rather than 1433 so this never collides with a SQL Server
+      # already installed on the host.
+      - "11433:1433"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s

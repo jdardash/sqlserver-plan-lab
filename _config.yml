@@ -1,0 +1,26 @@
+# GitHub Pages configuration.
+#
+# The site is the repository: README.md is the index, and each pathology
+# directory serves its own README. That last part needs jekyll-readme-index,
+# because Jekyll only serves index.html/index.md by default and every internal
+# link here points at a directory (pathologies/01-implicit-conversion). Without
+# the plugin the five links off the front page would all 404, which is worse
+# than publishing nothing.
+title: SQL Server Execution-Plan Lab
+description: >-
+  Five SQL Server performance pathologies reproduced against a seeded
+  two-million-row database, with the execution plan captured before and after
+  and the page counts to go with it.
+theme: jekyll-theme-primer
+plugins:
+  - jekyll-readme-index
+
+# Keep build scaffolding out of the published site. The .sqlplan captures stay:
+# they are the evidence, and being able to download one and open it in SSMS is
+# the point.
+exclude:
+  - Makefile
+  - docker-compose.yml
+  - lab/
+  - tests/
+  - LICENSE

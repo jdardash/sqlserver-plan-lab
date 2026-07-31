@@ -1,5 +1,9 @@
 # SQL Server Execution-Plan Lab
 
+[![lab](https://github.com/jdardash/sqlserver-plan-lab/actions/workflows/lab.yml/badge.svg)](https://github.com/jdardash/sqlserver-plan-lab/actions/workflows/lab.yml)
+[![SQL Server 2022](https://img.shields.io/badge/SQL%20Server-2022-CC2927?logo=microsoftsqlserver&logoColor=white)](https://hub.docker.com/r/microsoft/mssql-server)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 Five SQL Server performance pathologies, each reproduced against a seeded
 two-million-row database, with the execution plan captured before and after and
 the page counts to go with it.
@@ -26,10 +30,17 @@ the build fails rather than publishing a stale claim.
 
 Logical reads are the primary metric here on purpose.
 
-They are deterministic: the same plan against the same data reads the same
-number of pages on a laptop and on a CI runner. Milliseconds are not, because
-they move with cache state, CPU contention, and whatever else the machine is
-doing.
+They are near-deterministic: the same plan against the same data reads
+essentially the same number of pages anywhere. The figures below were measured
+on a laptop and reproduce on a clean CI runner to within a fraction of a
+percent, the residue coming from read-ahead and parallelism decisions. Compare
+that with milliseconds, which move with cache state, CPU contention, and
+whatever else the machine happens to be doing.
+
+Pathology 05 makes the case on its own. On the CI runner its two variants
+finished within eight milliseconds of each other, which would suggest the fix
+does nothing. The forced seek read 1.6 million pages to return exactly what the
+scan returned in 44,000. Time said "no difference"; the page counts said 37x.
 
 There is also a resolution problem. A warm single-row index seek finishes in
 well under a microsecond, which is below what `SYSUTCDATETIME` can resolve, so
@@ -82,7 +93,7 @@ one. `02` explains why the usual `CAST(col AS DATE)` example proves nothing.
 
 ## Layout
 
-```
+```text
 schema/        Tables, baseline indexes, and a deterministic skewed seed
 pathologies/   One directory each: setup, the query, and an explanation
 lab/           The harness. sqlcmd wrapper, measurement, reporting

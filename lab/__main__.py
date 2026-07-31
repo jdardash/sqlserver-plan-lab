@@ -11,10 +11,15 @@ from lab.sqlcmd import run_sql_file
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# A pathology that does not move wall-clock time by at least this much has
+# A pathology that does not cut logical reads by at least this factor has
 # stopped reproducing, and the repository should fail loudly rather than
 # publish a table of ones.
-MIN_SPEEDUP = 1.5
+#
+# The gate is on logical reads, not elapsed time. Time is unusable as a gate
+# here: a warm index seek finishes below the timer's resolution and reports
+# zero, so a time-based gate divides by zero and calls the best results in the
+# table failures. It did exactly that before this was fixed.
+MIN_READ_REDUCTION = 2.0
 
 
 def seed() -> int:
@@ -42,12 +47,13 @@ def run() -> int:
     failed = [
         name
         for name, r in results.items()
-        if r["fast"].median_ms <= 0
-        or r["slow"].median_ms / r["fast"].median_ms < MIN_SPEEDUP
+        if r["slow"].logical_reads / max(r["fast"].logical_reads, 1)
+        < MIN_READ_REDUCTION
     ]
     if failed:
         print(f"pathologies failed to reproduce: {', '.join(failed)}")
         return 1
+    print("all pathologies reproduced")
     return 0
 
 

@@ -11,8 +11,13 @@ GO
       n2 AS (SELECT 1 AS c FROM n1 a CROSS JOIN n1 b),
       n3 AS (SELECT 1 AS c FROM n2 a CROSS JOIN n2 b),
       n4 AS (SELECT 1 AS c FROM n3 a CROSS JOIN n3 b),
-      nums AS (SELECT TOP (50000) ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS i
-               FROM n4 a CROSS JOIN n4 b)
+      n5 AS (SELECT 1 AS c FROM n4 a CROSS JOIN n4 b),
+      -- One million customers. Fifty thousand was not enough: an index seek
+      -- against a table that small completes inside the millisecond that
+      -- SET STATISTICS TIME can resolve, so pathology 01 measured 0 ms and
+      -- proved nothing. Only the first 50,000 own orders, which is realistic.
+      nums AS (SELECT TOP (1000000) ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS i
+               FROM n5 a CROSS JOIN n5 b)
 INSERT INTO dbo.Customers (CustomerId, AccountCode, DisplayName, Region)
 SELECT i,
        'ACCT-' + RIGHT('00000000' + CAST(i AS VARCHAR(8)), 8),

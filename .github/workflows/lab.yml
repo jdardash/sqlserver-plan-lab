@@ -1,0 +1,52 @@
+name: lab
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Start SQL Server
+        run: |
+          docker compose up -d
+          for _ in $(seq 1 60); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' planlab-mssql)
+            [ "$status" = "healthy" ] && break
+            sleep 3
+          done
+          docker inspect --format '{{.State.Health.Status}}' planlab-mssql | grep -q healthy
+
+      - name: Unit tests
+        run: python -m pytest tests/ -q
+
+      - name: Seed
+        run: python -m lab seed
+
+      - name: Reproduce every pathology
+        run: python -m lab run
+
+      # Deliberately no check that the committed README matches this run.
+      # Logical reads are deterministic, but the elapsed-time column is not, so
+      # such a check would fail on every run regardless of correctness. The
+      # reproduce step above is the real gate: it fails if any pathology stops
+      # cutting logical reads by the required factor.
+
+      - name: Upload captured plans
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-plans
+          path: results/*.sqlplan

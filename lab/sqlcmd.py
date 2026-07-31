@@ -87,8 +87,13 @@ def run_sql_file(path: Path, database: str = "PlanLab") -> str:
 
 
 def run_sql_timed(sql: str, database: str = "PlanLab") -> str:
-    """Run `sql` and return only the SET STATISTICS TIME lines."""
-    return _run(database, query=sql, grep="elapsed time")
+    """Run `sql` and return only the harness timing marker line."""
+    return _run(database, query=sql, grep="LABTIME=")
+
+
+def run_sql_io(sql: str, database: str = "PlanLab") -> str:
+    """Run `sql` under SET STATISTICS IO and return only the page-count lines."""
+    return _run(database, query=sql, grep="logical reads")
 
 
 def run_sql_plan(sql: str, database: str = "PlanLab") -> str:

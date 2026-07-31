@@ -1,0 +1,2 @@
+This pathology depends on a poisoned plan cache. Clearing it would
+destroy the effect being demonstrated, so the harness leaves it alone.

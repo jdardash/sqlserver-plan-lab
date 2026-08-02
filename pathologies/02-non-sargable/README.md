@@ -19,3 +19,27 @@ rewrites it into a range seek, so it is SARGable and demonstrates nothing. It
 was measured here at 1.0x before the example was corrected. Wrapping a column
 in a function usually breaks the seek, but "usually" is not "always", and the
 plan is what settles it.
+
+## What the captured plan shows
+
+Extracted from the committed captures
+([slow](../../results/02-non-sargable-slow.sqlplan),
+[fast](../../results/02-non-sargable-fast.sqlplan)) by
+`python -m lab plans`, and regenerated on every run. Open the `.sqlplan` files
+in SSMS for the full picture.
+
+<!-- PLAN:START -->
+
+| Variant | Operator | Rows read | Rows returned | Executions |
+| --- | --- | ---: | ---: | ---: |
+| slow | Clustered Index Scan of `Orders.PK_Orders` | 2,000,000 | 1,440 | 16 |
+| fast | Index Seek of `Orders.IX_Orders_OrderDate` | 1,440 | 1,440 | 1 |
+| fast | Clustered Index Seek of `Orders.PK_Orders` | 1,440 | 1,440 | 1,440 |
+
+Optimizer warning in the slow plan: `Cardinality Estimate: CONVERT(varchar(10),[PlanLab].[dbo].[Orders].[OrderDate],120)`
+
+Optimizer warning in the slow plan: `Seek Plan: CONVERT(varchar(10),[PlanLab].[dbo].[Orders].[OrderDate],120)=[@1]`
+
+Optimizer warning in the slow plan: `Seek Plan: CONVERT(varchar(10),[PlanLab].[dbo].[Orders].[OrderDate],120)='2023-06-15'`
+
+<!-- PLAN:END -->

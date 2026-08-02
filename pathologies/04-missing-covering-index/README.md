@@ -23,3 +23,20 @@ to the leaf pages only.
 insert and update on `dbo.Orders` and it consumes storage. Covering indexes are
 a trade, not a win, and anyone presenting them as free has not measured the
 write side.
+
+## What the captured plan shows
+
+Extracted from the committed captures
+([slow](../../results/04-missing-covering-index-slow.sqlplan),
+[fast](../../results/04-missing-covering-index-fast.sqlplan)) by
+`python -m lab plans`, and regenerated on every run. Open the `.sqlplan` files
+in SSMS for the full picture.
+
+<!-- PLAN:START -->
+
+| Variant | Operator | Rows read | Rows returned | Executions |
+| --- | --- | ---: | ---: | ---: |
+| slow | Clustered Index Scan of `Orders.PK_Orders` | 2,000,000 | 75,086 | 16 |
+| fast | Index Seek of `Orders.IX_Orders_Status_OrderDate_Covering` | 75,086 | 75,086 | 1 |
+
+<!-- PLAN:END -->

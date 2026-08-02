@@ -24,3 +24,21 @@ is the signature.
 **Note on measurement.** This is the one pathology whose harness does not clear
 the plan cache between runs, because the poisoned cache *is* the pathology. See
 `KEEP_PLAN_CACHE` in this directory.
+
+## What the captured plan shows
+
+Extracted from the committed captures
+([slow](../../results/03-parameter-sniffing-slow.sqlplan),
+[fast](../../results/03-parameter-sniffing-fast.sqlplan)) by
+`python -m lab plans`, and regenerated on every run. Open the `.sqlplan` files
+in SSMS for the full picture.
+
+<!-- PLAN:START -->
+
+| Variant | Operator | Rows read | Rows returned | Executions |
+| --- | --- | ---: | ---: | ---: |
+| slow | Clustered Index Scan of `Orders.PK_Orders` | 2,000,000 | 27 | 16 |
+| fast | Index Seek of `Orders.IX_Orders_CustomerId` | 27 | 27 | 1 |
+| fast | Clustered Index Seek of `Orders.PK_Orders` | 27 | 27 | 27 |
+
+<!-- PLAN:END -->

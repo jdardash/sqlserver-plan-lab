@@ -18,11 +18,11 @@ the build fails rather than publishing a stale claim.
 
 | Pathology | Logical reads | Reads saved | Median time | Runs |
 | --- | ---: | ---: | ---: | ---: |
-| `01-implicit-conversion` | 3,376 to 6 | 563x | 120 ms to under 0.01 ms | 5 |
-| `02-non-sargable` | 44,447 to 4,427 | 10x | 121 ms to 4.10 ms | 5 |
-| `03-parameter-sniffing` | 44,447 to 93 | 478x | 22 ms to under 0.01 ms | 5 |
-| `04-missing-covering-index` | 44,447 to 397 | 112x | 27 ms to 12 ms | 5 |
-| `05-key-lookup-tipping` | 1,611,166 to 44,075 | 37x | 3926 ms to 2640 ms | 5 |
+| `01-implicit-conversion` | 3,376 to 6 | 563x | 424 ms to under 0.01 ms | 5 |
+| `02-non-sargable` | 44,447 to 4,427 | 10x | 234 ms to 8.63 ms | 5 |
+| `03-parameter-sniffing` | 44,447 to 93 | 478x | 38 ms to under 0.01 ms | 5 |
+| `04-missing-covering-index` | 44,447 to 397 | 112x | 32 ms to 8.43 ms | 5 |
+| `05-key-lookup-tipping` | 1,611,166 to 44,107 | 37x | 3955 ms to 3583 ms | 5 |
 
 <!-- RESULTS:END -->
 
@@ -103,6 +103,14 @@ results/       Captured plan XML, committed, openable in SSMS
 Captured plans in `results/` are committed on purpose. Open them in SSMS or
 Azure Data Studio and check the operators yourself rather than taking the
 table's word for it. CI also uploads them as build artifacts.
+
+For readers without SSMS, every pathology README ends with a "What the
+captured plan shows" table: the data-access operators, rows read against rows
+returned, executions, and any optimizer warnings, extracted from the plan XML
+by `python -m lab plans`. Like the results table, it is generated, never
+hand-typed. The extract is where the stories are shortest: pathology 01's scan
+reads 1,000,000 rows to return 1, and pathology 05's key lookup is a seek
+executed 525,600 times.
 
 ## License
 

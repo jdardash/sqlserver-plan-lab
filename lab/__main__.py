@@ -1,4 +1,4 @@
-"""Lab CLI: python -m lab seed | run"""
+"""Lab CLI: python -m lab seed | run | plans"""
 
 from __future__ import annotations
 
@@ -28,6 +28,18 @@ def seed() -> int:
     return 0
 
 
+def plans() -> int:
+    """Regenerate every pathology README's plan section from results/.
+
+    Works offline: it reads the committed captures, not the database.
+    """
+    from lab.plans import generate_all
+
+    for name in generate_all(REPO_ROOT):
+        print(f"plan section regenerated for {name}")
+    return 0
+
+
 def run() -> int:
     from lab.measure import measure_pathology
     from lab.report import render_table, write_readme
@@ -41,6 +53,7 @@ def run() -> int:
 
     table = render_table(results)
     write_readme(table, REPO_ROOT / "README.md")
+    plans()
     print()
     print(table)
 
@@ -63,7 +76,9 @@ def main(argv: list[str]) -> int:
         return seed()
     if command == "run":
         return run()
-    print("usage: python -m lab seed | run", file=sys.stderr)
+    if command == "plans":
+        return plans()
+    print("usage: python -m lab seed | run | plans", file=sys.stderr)
     return 2
 
 

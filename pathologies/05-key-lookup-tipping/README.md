@@ -20,3 +20,21 @@ most common piece of half-learned tuning advice. Above the tipping point it is
 false, and this directory is the counterexample with page counts attached: the
 forced seek reads over 1.6 million pages to return the same rows the scan
 returns in about 44,000.
+
+## What the captured plan shows
+
+Extracted from the committed captures
+([slow](../../results/05-key-lookup-tipping-slow.sqlplan),
+[fast](../../results/05-key-lookup-tipping-fast.sqlplan)) by
+`python -m lab plans`, and regenerated on every run. Open the `.sqlplan` files
+in SSMS for the full picture.
+
+<!-- PLAN:START -->
+
+| Variant | Operator | Rows read | Rows returned | Executions |
+| --- | --- | ---: | ---: | ---: |
+| slow | Index Seek of `Orders.IX_Orders_OrderDate_Narrow` | 525,600 | 525,600 | 1 |
+| slow | Clustered Index Seek of `Orders.PK_Orders` | 525,600 | 525,600 | 525,600 |
+| fast | Clustered Index Scan of `Orders.PK_Orders` | 2,000,000 | 525,600 | 16 |
+
+<!-- PLAN:END -->

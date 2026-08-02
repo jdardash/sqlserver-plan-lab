@@ -67,11 +67,16 @@ def _run(
     else:
         script += f"; status=$?; cat {OUT_FILE}; exit $status"
 
+    # With no stdin payload, hand the child DEVNULL instead of inheriting the
+    # parent's stdin. Inheriting fails with WinError 6 wherever the parent has
+    # no valid stdin handle (headless runners, service contexts), and this
+    # harness never wants the child reading an interactive terminal anyway.
+    io = {"input": stdin} if stdin is not None else {"stdin": subprocess.DEVNULL}
     proc = subprocess.run(
         ["docker", "exec", "-i", CONTAINER, "sh", "-c", script],
-        input=stdin,
         capture_output=True,
         text=True,
+        **io,
     )
     if proc.returncode != 0:
         raise SqlcmdError((proc.stdout or proc.stderr).strip())
